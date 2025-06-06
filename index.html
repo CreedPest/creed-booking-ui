@@ -135,6 +135,17 @@
   </style>
 </head>
 <body>
+<script>
+  const now = new Date();
+  const nowCentral = new Date(now.toLocaleString("en-US", { timeZone: "America/Chicago" }));
+
+  function isFutureSlot(dateStr, slot) {
+    const [startHour] = slot.start;
+    const slotStart = new Date(dateStr);
+    slotStart.setHours(startHour, 0, 0, 0);
+    return slotStart > nowCentral;
+  }
+</script>
 
   <div style="text-align:center; margin-bottom:20px;">
     <button id="prevWeek" class="nav-button">← Previous Week</button>
