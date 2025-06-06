@@ -7,12 +7,16 @@
   <style>
     body {
       font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
     .calendar-grid {
       display: flex;
       flex-wrap: wrap;
       gap: 16px;
       justify-content: center;
+      padding: 16px;
     }
     .calendar-day {
       border: 1px solid #ccc;
@@ -20,6 +24,18 @@
       padding: 10px;
       min-width: 200px;
       background: #f9f9f9;
+      flex: 1 1 calc(100% / 2 - 32px);
+      max-width: 300px;
+    }
+    @media (min-width: 768px) {
+      .calendar-day {
+        flex: 1 1 calc(100% / 3 - 32px);
+      }
+    }
+    @media (min-width: 1024px) {
+      .calendar-day {
+        flex: 1 1 calc(100% / 4 - 32px);
+      }
     }
     .day-label {
       font-weight: bold;
@@ -75,14 +91,20 @@
     }
     .form-row {
       display: flex;
+      flex-wrap: wrap;
       gap: 10px;
       margin-bottom: 10px;
     }
     .form-row input, .form-row textarea {
-      flex: 1;
+      flex: 1 1 100%;
       padding: 8px;
       font-family: Arial, sans-serif;
       font-size: 14px;
+    }
+    @media (min-width: 480px) {
+      .form-row input, .form-row textarea {
+        flex: 1 1 calc(50% - 5px);
+      }
     }
     .modal-form input, .modal-form textarea {
       width: 100%;
@@ -94,6 +116,7 @@
       text-align: center;
       margin-top: 20px;
       font-family: Arial, sans-serif;
+      padding: 0 16px;
     }
     button[type="submit"] {
       background-color: #32cd32;
