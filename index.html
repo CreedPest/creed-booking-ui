@@ -3,13 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Creed Pest Booking</title>
+  <title>Creed Pest Control Online Booking</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
+      background: #fff;
       box-sizing: border-box;
+    }
+    header {
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 24px;
+    }
+    .notice {
+      padding: 0 20px;
+      max-width: 800px;
+      margin: 0 auto 20px;
+      font-size: 15px;
     }
     .calendar-grid {
       display: flex;
@@ -130,182 +144,49 @@
     }
     button[type="submit"]:hover {
       background-color: #888;
-      color: white;
     }
   </style>
 </head>
 <body>
-
-<div style="text-align:center; margin-bottom:20px;">
-  <button id="prevWeek" class="nav-button">← Previous Week</button>
-  <button id="nextWeek" class="nav-button">Next Week →</button>
-</div>
-
-<div id="booking-app" class="calendar-grid"></div>
-
-<div class="modal-overlay" id="modalOverlay"></div>
-<form class="modal-form" id="bookingForm">
-  <h2>Free Estimate</h2>
-  <p>Please fill out the form below to schedule your free pest control estimate.</p>
-  <div class="form-row">
-    <input type="text" placeholder="First Name *" id="firstName" required>
-    <input type="text" placeholder="Last Name *" id="lastName" required>
+  <header>
+    <h1>Creed Pest Control Online Booking</h1>
+  </header>
+  <div style="text-align:center; margin-bottom:20px;">
+    <button id="prevWeek" class="nav-button">← Previous Week</button>
+    <button id="nextWeek" class="nav-button">Next Week →</button>
   </div>
-  <div class="form-row">
-    <input type="email" placeholder="Email Address *" id="email" required>
-    <input type="tel" placeholder="Phone Number *" id="phone" required>
+  <div id="booking-app" class="calendar-grid"></div>
+  <div class="modal-overlay" id="modalOverlay"></div>
+  <form class="modal-form" id="bookingForm">
+    <h2>Free Estimate</h2>
+    <div class="notice">
+      <p><strong>FREE ESTIMATE:</strong><br/>Free estimates allow us to properly understand your pest issue and formulate an appropriate treatment or service as well as provide an upfront price. Free estimates have no obligation to purchase. Depending on the pest issue we may be able to perform the suggested treatment the same day should you choose.</p>
+      <p><strong>PLEASE NOTE:</strong><br/>Free estimates booking online are available only to customers who reside in Ames, Nevada, Boone and Huxley. All other customers please email us at <a href="mailto:office@creedpest.com">office@creedpest.com</a> for scheduling availability.</p>
+      <p><strong>Please ensure your time zone is set to Central Time when making an appointment.</strong></p>
+    </div>
+    <p><strong>Selected Appointment:</strong> <span id="confirmDateTime"></span></p>
+    <div class="form-row">
+      <input type="text" placeholder="First Name *" id="firstName" required>
+      <input type="text" placeholder="Last Name *" id="lastName" required>
+    </div>
+    <div class="form-row">
+      <input type="email" placeholder="Email Address *" id="email" required>
+      <input type="tel" placeholder="Phone Number *" id="phone" required>
+    </div>
+    <div class="form-row">
+      <input type="text" placeholder="Street Address *" id="address" required>
+      <input type="text" placeholder="City *" id="city" required>
+    </div>
+    <input type="text" placeholder="Zip Code *" id="zip" required>
+    <input type="text" placeholder="Pest Concern *" id="concern" required>
+    <input type="hidden" id="formDate">
+    <input type="hidden" id="formWindow">
+    <button type="submit">Book Time</button>
+  </form>
+  <div class="confirmation-message" id="confirmationMessage"></div>
+  <div class="error-message" id="errorMessage">
+    Something went wrong. Please <a href="sms:5152576601?body=Hey, I was trying to book online but hit a snag. Can you help?">text us</a> at <strong>515-257-6601</strong>.
   </div>
-  <div class="form-row">
-    <input type="text" placeholder="Street Address *" id="address" required>
-    <input type="text" placeholder="City *" id="city" required>
-  </div>
-  <input type="text" placeholder="Zip Code *" id="zip" required>
-  <input type="text" placeholder="Pest Concern *" id="concern" required>
-  <p><strong>Selected Appointment:</strong> <span id="confirmDateTime"></span></p>
-  <input type="hidden" id="formDate">
-  <input type="hidden" id="formWindow">
-  <button type="submit">Book Time</button>
-</form>
-
-<div class="confirmation-message" id="confirmationMessage"></div>
-<div class="error-message" id="errorMessage">
-  Something went wrong. Please <a href="sms:5152576601?body=Hey, I was trying to book online but hit a snag. Can you help?">text us</a> at <strong>515-257-6601</strong>.
-</div>
-
-<script>
-  const WEB_APP_URL = "https://creed-pest-proxy.onrender.com/";
-  const bookingApp = document.getElementById("booking-app");
-  const form = document.getElementById("bookingForm");
-  const overlay = document.getElementById("modalOverlay");
-  const confirmationMessage = document.getElementById("confirmationMessage");
-  const errorMessage = document.getElementById("errorMessage");
-  const confirmDateTime = document.getElementById("confirmDateTime");
-  const formDate = document.getElementById("formDate");
-  const formWindow = document.getElementById("formWindow");
-
-  let availability = [];
-  let currentOffset = 0;
-
-  const now = new Date();
-  const nowCentral = new Date(now.toLocaleString("en-US", { timeZone: "America/Chicago" }));
-
-  async function fetchAvailability() {
-    try {
-      const response = await fetch(WEB_APP_URL);
-      availability = await response.json();
-      availability = availability.filter(a => {
-        const d = new Date(a.date);
-        return d.getDay() !== 0 && d.getDay() !== 6;
-      });
-      renderCalendar();
-    } catch (err) {
-      bookingApp.innerHTML = '<p style="color:red;">Could not load availability.</p>';
-    }
-  }
-
-  function renderCalendar() {
-    bookingApp.innerHTML = "";
-    const visibleDates = availability.slice(currentOffset, currentOffset + 7);
-
-    for (let entry of visibleDates) {
-      const dateObj = new Date(entry.date);
-      const isToday = dateObj.toDateString() === nowCentral.toDateString();
-
-      const label = isToday
-        ? `Today, ${dateObj.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })}`
-        : dateObj.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
-
-      const container = document.createElement("div");
-      container.className = "calendar-day";
-
-      const labelDiv = document.createElement("div");
-      labelDiv.className = "day-label";
-      labelDiv.textContent = label;
-      container.appendChild(labelDiv);
-
-      for (let slot of entry.windows) {
-        const [startHour] = slot.start;
-        const slotTime = new Date(entry.date);
-        slotTime.setHours(startHour, 0, 0, 0);
-
-        if (slotTime > nowCentral) {
-          const btn = document.createElement("button");
-          btn.className = "bubble-button";
-          btn.textContent = slot.label;
-          btn.onclick = () => openForm(entry.date, slot.label);
-          container.appendChild(btn);
-        }
-      }
-
-      if (container.children.length > 1) bookingApp.appendChild(container);
-    }
-  }
-
-  document.getElementById("prevWeek").onclick = () => {
-    if (currentOffset >= 7) {
-      currentOffset -= 7;
-      renderCalendar();
-    }
-  };
-
-  document.getElementById("nextWeek").onclick = () => {
-    currentOffset += 7;
-    renderCalendar();
-  };
-
-  function openForm(dateStr, windowLabel) {
-    const readable = new Date(dateStr).toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
-    confirmDateTime.textContent = `${readable} between ${windowLabel}`;
-    formDate.value = dateStr;
-    formWindow.value = windowLabel;
-    overlay.style.display = "block";
-    form.style.display = "block";
-  }
-
-  overlay.onclick = () => {
-    overlay.style.display = "none";
-    form.style.display = "none";
-  };
-
-  form.onsubmit = async (e) => {
-    e.preventDefault();
-    const formData = {
-      firstName: document.getElementById("firstName").value,
-      lastName: document.getElementById("lastName").value,
-      email: document.getElementById("email").value,
-      phone: document.getElementById("phone").value,
-      address: document.getElementById("address").value,
-      city: document.getElementById("city").value,
-      zip: document.getElementById("zip").value,
-      concern: document.getElementById("concern").value,
-      date: formDate.value,
-      timeWindow: formWindow.value
-    };
-
-    try {
-      const response = await fetch(WEB_APP_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        confirmationMessage.textContent = `Thank you! Your appointment is set for ${formData.date} between ${formData.timeWindow}.`;
-        confirmationMessage.style.display = "block";
-        overlay.style.display = "none";
-        form.style.display = "none";
-      } else {
-        throw new Error("Server returned error");
-      }
-    } catch (err) {
-      form.style.display = "none";
-      overlay.style.display = "none";
-      errorMessage.style.display = "block";
-    }
-  };
-
-  fetchAvailability();
-</script>
+  <script src="index.js"></script>
 </body>
 </html>
