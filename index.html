@@ -2,92 +2,90 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Creed Pest Control Online Booking</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Creed Pest Control Booking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Inter', sans-serif;
       margin: 0;
-      padding: 0;
-      background: #fff;
-      box-sizing: border-box;
+      background-color: #f3f4f6;
+      color: #111827;
     }
     header {
-      padding: 20px;
+      background-color: #32cd32;
+      padding: 2rem;
       text-align: center;
+      color: white;
     }
-    h1 {
-      font-size: 24px;
+    header h1 {
+      margin: 0;
+      font-size: 2rem;
     }
     .notice {
-      padding: 0 20px;
       max-width: 800px;
-      margin: 0 auto 20px;
-      font-size: 15px;
+      margin: 1rem auto;
+      padding: 1rem;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      font-size: 0.95rem;
     }
     .calendar-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      justify-content: center;
-      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      max-width: 1200px;
+      margin: 1rem auto;
+      padding: 0 1rem;
     }
     .calendar-day {
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 10px;
-      min-width: 200px;
-      background: #f9f9f9;
-      flex: 1 1 calc(100% / 2 - 32px);
-      max-width: 300px;
-    }
-    @media (min-width: 768px) {
-      .calendar-day {
-        flex: 1 1 calc(100% / 3 - 32px);
-      }
-    }
-    @media (min-width: 1024px) {
-      .calendar-day {
-        flex: 1 1 calc(100% / 4 - 32px);
-      }
+      background: white;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
     .day-label {
-      font-weight: bold;
-      margin-bottom: 8px;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
     }
     .bubble-button {
       display: block;
       width: 100%;
-      padding: 8px;
-      margin-bottom: 6px;
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
       border: none;
-      border-radius: 20px;
+      border-radius: 9999px;
       background-color: #32cd32;
       color: white;
+      font-weight: 600;
       cursor: pointer;
-      font-size: 14px;
+      transition: background-color 0.2s;
     }
     .bubble-button:hover {
-      background-color: #888;
+      background-color: #2ca02c;
+    }
+    .nav-buttons {
+      display: flex;
+      justify-content: center;
+      margin: 1rem 0;
     }
     .nav-button {
-      font-size: 16px;
-      padding: 8px 16px;
-      margin: 0 5px;
-      background-color: #444;
+      background: #444;
       color: white;
       border: none;
-      border-radius: 4px;
+      padding: 0.5rem 1rem;
+      margin: 0 0.5rem;
+      border-radius: 6px;
       cursor: pointer;
     }
     .modal-overlay {
       display: none;
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: rgba(0, 0, 0, 0.7);
+      inset: 0;
+      background: rgba(0,0,0,0.5);
       z-index: 999;
     }
     .modal-form {
@@ -97,53 +95,60 @@
       left: 50%;
       transform: translate(-50%, -50%);
       background: white;
-      padding: 20px;
+      padding: 2rem;
       border-radius: 10px;
       z-index: 1000;
       width: 90%;
       max-width: 600px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
     .form-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 10px;
+      gap: 0.5rem;
     }
     .form-row input, .form-row textarea {
       flex: 1 1 100%;
-      padding: 8px;
-      font-family: Arial, sans-serif;
-      font-size: 14px;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
     }
-    @media (min-width: 480px) {
+    .form-row input:focus, .form-row textarea:focus {
+      border-color: #32cd32;
+      outline: none;
+    }
+    @media (min-width: 500px) {
       .form-row input, .form-row textarea {
-        flex: 1 1 calc(50% - 5px);
+        flex: 1 1 calc(50% - 0.5rem);
       }
     }
-    .modal-form input, .modal-form textarea {
-      width: 100%;
-      margin-bottom: 10px;
-      font-family: Arial, sans-serif;
+    .submit-button {
+      margin-top: 1rem;
+      background-color: #32cd32;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 9999px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .submit-button:hover {
+      background-color: #2ca02c;
     }
     .confirmation-message, .error-message {
       display: none;
       text-align: center;
-      margin-top: 20px;
-      font-family: Arial, sans-serif;
-      padding: 0 16px;
+      margin-top: 1.5rem;
+      padding: 1rem;
+      font-size: 1rem;
     }
-    button[type="submit"] {
-      background-color: #32cd32;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      font-family: Arial, sans-serif;
+    .confirmation-message {
+      color: green;
     }
-    button[type="submit"]:hover {
-      background-color: #888;
+    .error-message {
+      color: red;
     }
   </style>
 </head>
@@ -151,42 +156,122 @@
   <header>
     <h1>Creed Pest Control Online Booking</h1>
   </header>
-  <div style="text-align:center; margin-bottom:20px;">
+  <div class="notice">
+    <p><strong>Free Estimate Policy:</strong> We offer no-obligation free estimates for customers in Ames, Nevada, Boone, and Huxley. Customers outside this area, please email <a href="mailto:office@creedpest.com">office@creedpest.com</a>.</p>
+    <p>Please ensure your time zone is set to Central Time when selecting a time.</p>
+  </div>
+  <div class="nav-buttons">
     <button id="prevWeek" class="nav-button">← Previous Week</button>
     <button id="nextWeek" class="nav-button">Next Week →</button>
   </div>
   <div id="booking-app" class="calendar-grid"></div>
+
   <div class="modal-overlay" id="modalOverlay"></div>
   <form class="modal-form" id="bookingForm">
-    <h2>Free Estimate</h2>
-    <div class="notice">
-      <p><strong>FREE ESTIMATE:</strong><br/>Free estimates allow us to properly understand your pest issue and formulate an appropriate treatment or service as well as provide an upfront price. Free estimates have no obligation to purchase. Depending on the pest issue we may be able to perform the suggested treatment the same day should you choose.</p>
-      <p><strong>PLEASE NOTE:</strong><br/>Free estimates booking online are available only to customers who reside in Ames, Nevada, Boone and Huxley. All other customers please email us at <a href="mailto:office@creedpest.com">office@creedpest.com</a> for scheduling availability.</p>
-      <p><strong>Please ensure your time zone is set to Central Time when making an appointment.</strong></p>
-    </div>
-    <p><strong>Selected Appointment:</strong> <span id="confirmDateTime"></span></p>
+    <h2>Confirm Appointment</h2>
+    <p><strong>Selected Time:</strong> <span id="confirmDateTime"></span></p>
     <div class="form-row">
       <input type="text" placeholder="First Name *" id="firstName" required>
       <input type="text" placeholder="Last Name *" id="lastName" required>
     </div>
     <div class="form-row">
-      <input type="email" placeholder="Email Address *" id="email" required>
-      <input type="tel" placeholder="Phone Number *" id="phone" required>
+      <input type="email" placeholder="Email *" id="email" required>
+      <input type="tel" placeholder="Phone *" id="phone" required>
     </div>
     <div class="form-row">
       <input type="text" placeholder="Street Address *" id="address" required>
       <input type="text" placeholder="City *" id="city" required>
     </div>
     <input type="text" placeholder="Zip Code *" id="zip" required>
-    <input type="text" placeholder="Pest Concern *" id="concern" required>
+    <textarea placeholder="Pest Concern *" id="concern" required></textarea>
     <input type="hidden" id="formDate">
     <input type="hidden" id="formWindow">
-    <button type="submit">Book Time</button>
+    <button type="submit" class="submit-button">Book Appointment</button>
   </form>
-  <div class="confirmation-message" id="confirmationMessage"></div>
-  <div class="error-message" id="errorMessage">
-    Something went wrong. Please <a href="sms:5152576601?body=Hey, I was trying to book online but hit a snag. Can you help?">text us</a> at <strong>515-257-6601</strong>.
-  </div>
-  <script src="index.js"></script>
+  <div class="confirmation-message" id="confirmationMessage">Your appointment has been booked! We'll be in touch soon.</div>
+  <div class="error-message" id="errorMessage">Something went wrong. Please <a href="sms:5152576601">text us</a>.</div>
+
+  <script>
+    const app = document.getElementById("booking-app");
+    const overlay = document.getElementById("modalOverlay");
+    const form = document.getElementById("bookingForm");
+    const confirmText = document.getElementById("confirmDateTime");
+    const confirmation = document.getElementById("confirmationMessage");
+    const error = document.getElementById("errorMessage");
+
+    fetch("https://creed-proxy.onrender.com/")
+      .then(res => res.json())
+      .then(data => {
+        data.forEach(day => {
+          const div = document.createElement("div");
+          div.className = "calendar-day";
+
+          const label = document.createElement("div");
+          label.className = "day-label";
+          label.textContent = new Date(day.date).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+
+          div.appendChild(label);
+
+          day.windows.forEach(window => {
+            const btn = document.createElement("button");
+            btn.className = "bubble-button";
+            btn.textContent = window.label;
+            btn.addEventListener("click", () => openForm(day.date, window.label));
+            div.appendChild(btn);
+          });
+
+          app.appendChild(div);
+        });
+      })
+      .catch(() => error.style.display = "block");
+
+    function openForm(date, window) {
+      confirmText.textContent = `${date} @ ${window}`;
+      document.getElementById("formDate").value = date;
+      document.getElementById("formWindow").value = window;
+      overlay.style.display = "block";
+      form.style.display = "block";
+    }
+
+    overlay.addEventListener("click", () => {
+      overlay.style.display = "none";
+      form.style.display = "none";
+    });
+
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      confirmation.style.display = "none";
+      error.style.display = "none";
+      const payload = {
+        firstName: form.firstName.value,
+        lastName: form.lastName.value,
+        email: form.email.value,
+        phone: form.phone.value,
+        address: form.address.value,
+        city: form.city.value,
+        zip: form.zip.value,
+        concern: form.concern.value,
+        date: form.formDate.value,
+        timeWindow: form.formWindow.value
+      };
+
+      try {
+        const res = await fetch("https://creed-proxy.onrender.com/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if (json.success) {
+          confirmation.style.display = "block";
+          form.reset();
+          overlay.style.display = "none";
+          form.style.display = "none";
+        } else throw new Error();
+      } catch {
+        error.style.display = "block";
+      }
+    });
+  </script>
 </body>
 </html>
