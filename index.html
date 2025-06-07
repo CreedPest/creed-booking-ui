@@ -5,15 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Creed Pest Booking</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-    }
-    .calendar-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      justify-content: center;
-    }
+    body { font-family: Arial, sans-serif; }
+    .calendar-grid { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; }
     .calendar-day {
       border: 1px solid #ccc;
       border-radius: 8px;
@@ -21,10 +14,7 @@
       min-width: 200px;
       background: #f9f9f9;
     }
-    .day-label {
-      font-weight: bold;
-      margin-bottom: 8px;
-    }
+    .day-label { font-weight: bold; margin-bottom: 8px; }
     .bubble-button {
       display: block;
       width: 100%;
@@ -37,9 +27,7 @@
       cursor: pointer;
       font-size: 14px;
     }
-    .bubble-button:hover {
-      background-color: #888;
-    }
+    .bubble-button:hover { background-color: #888; }
     .nav-button {
       font-size: 16px;
       padding: 8px 16px;
@@ -73,11 +61,7 @@
       width: 90%;
       max-width: 600px;
     }
-    .form-row {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
+    .form-row { display: flex; gap: 10px; margin-bottom: 10px; }
     .form-row input, .form-row textarea {
       flex: 1;
       padding: 8px;
@@ -150,7 +134,7 @@
   </div>
 
   <script>
-    const WEB_APP_URL = "https://creed-pest-proxy.onrender.com/"; // Your Render proxy URL
+    const WEB_APP_URL = "https://creed-pest-proxy.onrender.com/";
     const bookingApp = document.getElementById("booking-app");
     const form = document.getElementById("bookingForm");
     const overlay = document.getElementById("modalOverlay");
@@ -168,7 +152,7 @@
         const response = await fetch(WEB_APP_URL);
         availability = await response.json();
         availability = availability.filter(a => {
-          const d = new Date(a.date);
+          const d = new Date(a.date + 'T00:00:00');
           return d.getDay() !== 0 && d.getDay() !== 6;
         });
         renderCalendar();
@@ -182,7 +166,9 @@
       const visibleDates = availability.slice(currentOffset, currentOffset + 7);
 
       for (let entry of visibleDates) {
-        const dateObj = new Date(entry.date);
+        const dateObj = new Date(entry.date + 'T00:00:00');
+        dateObj.setDate(dateObj.getDate() + 1); // Adjust for timezone issue
+
         const label = (dateObj.toDateString() === new Date().toDateString())
           ? `Today, ${dateObj.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })}`
           : (dateObj.toDateString() === new Date(new Date().setDate(new Date().getDate() + 1)).toDateString())
@@ -222,7 +208,10 @@
     };
 
     function openForm(dateStr, windowLabel) {
-      const readable = new Date(dateStr).toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
+      const displayDate = new Date(dateStr + 'T00:00:00');
+      displayDate.setDate(displayDate.getDate() + 1); // Adjust for timezone issue
+
+      const readable = displayDate.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
       confirmDateTime.textContent = `${readable} between ${windowLabel}`;
       formDate.value = dateStr;
       formWindow.value = windowLabel;
@@ -278,5 +267,3 @@
 </body>
 </html>
 
-</body>
-</html>
