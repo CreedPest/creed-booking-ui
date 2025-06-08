@@ -247,10 +247,17 @@
 
         const result = await response.json();
         if (result.success) {
-          confirmationMessage.textContent = `Thank you! Your appointment is set for ${formData.date} between ${formData.timeWindow}.`;
+          const [year, month, day] = formData.date.split("-");
+          const formattedDate = `${month}-${day}-${year}`;
+          confirmationMessage.innerHTML = `
+            <p>Thank you! Your Appointment is set for <strong>${formattedDate}</strong> between <strong>${formData.timeWindow}</strong>.</p>
+            <p>Please note this is an <strong>arrival window</strong>. Our technician may arrive anytime between those times.</p>
+            <p><a href="https://www.creedpest.com" style="color:#32cd32; font-weight:bold;">Back to Creed Pest Control</a></p>
+          `;
           confirmationMessage.style.display = "block";
           overlay.style.display = "none";
           form.style.display = "none";
+          bookingApp.innerHTML = "";
         } else {
           throw new Error("Server returned error");
         }
@@ -265,3 +272,4 @@
   </script>
 </body>
 </html>
+
