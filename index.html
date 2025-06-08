@@ -167,7 +167,6 @@
 
       for (let entry of visibleDates) {
         const dateObj = new Date(entry.date + 'T00:00:00');
-        dateObj.setDate(dateObj.getDate() + 1); // Adjust for timezone issue
 
         const label = (dateObj.toDateString() === new Date().toDateString())
           ? `Today, ${dateObj.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })}`
@@ -208,12 +207,12 @@
     };
 
     function openForm(dateStr, windowLabel) {
-      const displayDate = new Date(dateStr + 'T00:00:00');
-      displayDate.setDate(displayDate.getDate() + 1); // Adjust for timezone issue
+      const localDate = new Date(dateStr + 'T00:00:00');
+      const readable = localDate.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
+      const isoDate = localDate.toISOString().split("T")[0];
 
-      const readable = displayDate.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
       confirmDateTime.textContent = `${readable} between ${windowLabel}`;
-      formDate.value = dateStr;
+      formDate.value = isoDate;
       formWindow.value = windowLabel;
       overlay.style.display = "block";
       form.style.display = "block";
@@ -266,4 +265,3 @@
   </script>
 </body>
 </html>
-
