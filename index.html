@@ -6,6 +6,8 @@
   <title>Creed Pest Booking</title>
   <style>
     body { font-family: Arial, sans-serif; }
+    .calendar-section { margin-bottom: 30px; }
+    .calendar-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; text-align: center; }
     .calendar-grid { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; }
     .calendar-day {
       border: 1px solid #ccc;
@@ -96,13 +98,12 @@
   </style>
 </head>
 <body>
-
   <div style="text-align:center; margin-bottom:20px;">
-    <button id="prevWeek" class="nav-button">← Previous Week</button>
-    <button id="nextWeek" class="nav-button">Next Week →</button>
+    <button id="prevWeek" class="nav-button" style="display:none">← Previous</button>
+    <button id="nextWeek" class="nav-button">Next →</button>
   </div>
 
-  <div id="booking-app" class="calendar-grid"></div>
+  <div id="booking-app"></div>
 
   <div class="modal-overlay" id="modalOverlay"></div>
   <form class="modal-form" id="bookingForm">
@@ -161,49 +162,74 @@
       }
     }
 
+    function getWeekRange(offsetWeeks) {
+      const today = new Date();
+      const monday = new Date(today);
+      monday.setDate(monday.getDate() - (monday.getDay() + 6) % 7 + offsetWeeks * 7);
+      const friday = new Date(monday);
+      friday.setDate(monday.getDate() + 4);
+      return { start: monday, end: friday };
+    }
+
     function renderCalendar() {
       bookingApp.innerHTML = "";
-      const visibleDates = availability.slice(currentOffset, currentOffset + 7);
 
-      for (let entry of visibleDates) {
-        const dateObj = new Date(entry.date + 'T00:00:00');
+      for (let i = 0; i < 2; i++) {
+        const range = getWeekRange(currentOffset + i);
+        const section = document.createElement("div");
+        section.className = "calendar-section";
 
-        const label = (dateObj.toDateString() === new Date().toDateString())
-          ? `Today, ${dateObj.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })}`
-          : (dateObj.toDateString() === new Date(new Date().setDate(new Date().getDate() + 1)).toDateString())
-          ? `Tomorrow, ${dateObj.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })}`
-          : dateObj.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
+        const title = document.createElement("div");
+        title.className = "calendar-title";
+        title.textContent = (i === 0 && currentOffset === 0) ? "This Week" : (i === 1 && currentOffset === 0 ? "Next Week" : `${i + currentOffset + 1} Weeks from Now`);
+        section.appendChild(title);
 
-        const container = document.createElement("div");
-        container.className = "calendar-day";
+        const grid = document.createElement("div");
+        grid.className = "calendar-grid";
 
-        const labelDiv = document.createElement("div");
-        labelDiv.className = "day-label";
-        labelDiv.textContent = label;
-        container.appendChild(labelDiv);
+        for (let entry of availability) {
+          const dateObj = new Date(entry.date + 'T00:00:00');
+          if (dateObj >= range.start && dateObj <= range.end) {
+            const label = dateObj.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
+            const container = document.createElement("div");
+            container.className = "calendar-day";
 
-        for (let slot of entry.windows) {
-          const btn = document.createElement("button");
-          btn.className = "bubble-button";
-          btn.textContent = slot.label;
-          btn.onclick = () => openForm(entry.date, slot.label);
-          container.appendChild(btn);
+            const labelDiv = document.createElement("div");
+            labelDiv.className = "day-label";
+            labelDiv.textContent = label;
+            container.appendChild(labelDiv);
+
+            for (let slot of entry.windows) {
+              const btn = document.createElement("button");
+              btn.className = "bubble-button";
+              btn.textContent = slot.label;
+              btn.onclick = () => openForm(entry.date, slot.label);
+              container.appendChild(btn);
+            }
+
+            grid.appendChild(container);
+          }
         }
 
-        bookingApp.appendChild(container);
+        section.appendChild(grid);
+        bookingApp.appendChild(section);
       }
+
+      document.getElementById("prevWeek").style.display = currentOffset > 0 ? "inline-block" : "none";
     }
 
     document.getElementById("prevWeek").onclick = () => {
-      if (currentOffset >= 7) {
-        currentOffset -= 7;
+      if (currentOffset >= 2) {
+        currentOffset -= 2;
         renderCalendar();
       }
     };
 
     document.getElementById("nextWeek").onclick = () => {
-      currentOffset += 7;
-      renderCalendar();
+      if (currentOffset + 2 < 4) {
+        currentOffset += 2;
+        renderCalendar();
+      }
     };
 
     function openForm(dateStr, windowLabel) {
@@ -272,4 +298,3 @@
   </script>
 </body>
 </html>
-
