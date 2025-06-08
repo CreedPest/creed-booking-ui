@@ -6,6 +6,12 @@
   <title>Creed Pest Booking</title>
   <style>
     body { font-family: Arial, sans-serif; }
+    .loading-message {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+    }
     .calendar-section { margin-bottom: 30px; }
     .calendar-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; text-align: center; }
     .calendar-grid { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; }
@@ -98,6 +104,7 @@
   </style>
 </head>
 <body>
+  <div class="loading-message" id="loadingMessage">Just a moment while we pull up the schedule...</div>
   <div style="text-align:center; margin-bottom:20px;">
     <button id="prevWeek" class="nav-button" style="display:none">← Previous</button>
     <button id="nextWeek" class="nav-button">Next →</button>
@@ -144,6 +151,7 @@
     const confirmDateTime = document.getElementById("confirmDateTime");
     const formDate = document.getElementById("formDate");
     const formWindow = document.getElementById("formWindow");
+    const loadingMessage = document.getElementById("loadingMessage");
 
     let availability = [];
     let currentOffset = 0;
@@ -156,9 +164,11 @@
           const d = new Date(a.date + 'T00:00:00');
           return d.getDay() !== 0 && d.getDay() !== 6;
         });
+        loadingMessage.style.display = "none";
         renderCalendar();
       } catch (err) {
         bookingApp.innerHTML = '<p style="color:red;">Could not load availability.</p>';
+        loadingMessage.style.display = "none";
       }
     }
 
@@ -173,20 +183,21 @@
 
     function renderCalendar() {
       bookingApp.innerHTML = "";
-
       for (let i = 0; i < 2; i++) {
-        const range = getWeekRange(currentOffset + i);
+        const offset = currentOffset + i;
+        const range = getWeekRange(offset);
         const section = document.createElement("div");
         section.className = "calendar-section";
 
         const title = document.createElement("div");
         title.className = "calendar-title";
-        title.textContent = (i === 0 && currentOffset === 0) ? "This Week" : (i === 1 && currentOffset === 0 ? "Next Week" : `${i + currentOffset + 1} Weeks from Now`);
+        title.textContent = (offset === 0) ? "This Week" : (offset === 1 ? "Next Week" : `${offset} Weeks from Now`);
         section.appendChild(title);
 
         const grid = document.createElement("div");
         grid.className = "calendar-grid";
 
+        let hasSlots = false;
         for (let entry of availability) {
           const dateObj = new Date(entry.date + 'T00:00:00');
           if (dateObj >= range.start && dateObj <= range.end) {
@@ -208,7 +219,15 @@
             }
 
             grid.appendChild(container);
+            hasSlots = true;
           }
+        }
+
+        if (!hasSlots) {
+          const noSlotMessage = document.createElement("div");
+          noSlotMessage.style.textAlign = "center";
+          noSlotMessage.textContent = "No available times this week.";
+          grid.appendChild(noSlotMessage);
         }
 
         section.appendChild(grid);
@@ -226,10 +245,8 @@
     };
 
     document.getElementById("nextWeek").onclick = () => {
-      if (currentOffset + 2 < 4) {
-        currentOffset += 2;
-        renderCalendar();
-      }
+      currentOffset += 2;
+      renderCalendar();
     };
 
     function openForm(dateStr, windowLabel) {
@@ -298,3 +315,4 @@
   </script>
 </body>
 </html>
+
