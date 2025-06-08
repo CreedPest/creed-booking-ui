@@ -154,16 +154,32 @@
     const loadingMessage = document.getElementById("loadingMessage");
 
     let availability = [];
-    let currentOffset = 0;
+    let groupedWeeks = [];
+    let currentPage = 0;
 
     async function fetchAvailability() {
       try {
         const response = await fetch(WEB_APP_URL);
-        availability = await response.json();
-        availability = availability.filter(a => {
+        const raw = await response.json();
+        availability = raw.filter(a => {
           const d = new Date(a.date + 'T00:00:00');
           return d.getDay() !== 0 && d.getDay() !== 6;
         });
+
+        const weekMap = {};
+        for (let entry of availability) {
+          const date = new Date(entry.date + 'T00:00:00');
+          const sunday = new Date(date);
+          sunday.setDate(sunday.getDate() - sunday.getDay());
+          const weekKey = sunday.toISOString().split("T")[0];
+          if (!weekMap[weekKey]) weekMap[weekKey] = [];
+          weekMap[weekKey].push(entry);
+        }
+
+        groupedWeeks = Object.entries(weekMap)
+          .sort((a, b) => new Date(a[0]) - new Date(b[0]))
+          .map(([weekStart, entries]) => ({ weekStart, entries }));
+
         loadingMessage.style.display = "none";
         renderCalendar();
       } catch (err) {
@@ -172,83 +188,74 @@
       }
     }
 
-    function getWeekRange(offsetWeeks) {
-      const today = new Date();
-      const monday = new Date(today);
-      const day = today.getDay();
-      const diff = day === 0 ? -6 : 1 - day;
-      monday.setDate(today.getDate() + diff + offsetWeeks * 7);
-      const friday = new Date(monday);
-      friday.setDate(monday.getDate() + 4);
-      return { start: monday, end: friday };
-    }
-
     function renderCalendar() {
       bookingApp.innerHTML = "";
-      for (let i = 0; i < 2; i++) {
-        const offset = currentOffset + i;
-        const range = getWeekRange(offset);
+      const visibleWeeks = groupedWeeks.slice(currentPage * 2, currentPage * 2 + 2);
+
+      visibleWeeks.forEach(({ weekStart, entries }) => {
         const section = document.createElement("div");
         section.className = "calendar-section";
 
+        const weekLabel = new Date(weekStart);
         const title = document.createElement("div");
         title.className = "calendar-title";
-        title.textContent = (offset === 0) ? "This Week" : (offset === 1 ? "Next Week" : `${offset} Weeks from Now`);
+        title.textContent = `Week of ${weekLabel.toLocaleDateString(undefined, { month: "long", day: "numeric" })}`;
         section.appendChild(title);
 
         const grid = document.createElement("div");
         grid.className = "calendar-grid";
 
         let hasSlots = false;
-        for (let entry of availability) {
+
+        for (let entry of entries) {
           const dateObj = new Date(entry.date + 'T00:00:00');
-          if (dateObj >= range.start && dateObj <= range.end) {
-            const label = dateObj.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
-            const container = document.createElement("div");
-            container.className = "calendar-day";
+          const label = dateObj.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
+          const container = document.createElement("div");
+          container.className = "calendar-day";
 
-            const labelDiv = document.createElement("div");
-            labelDiv.className = "day-label";
-            labelDiv.textContent = label;
-            container.appendChild(labelDiv);
+          const labelDiv = document.createElement("div");
+          labelDiv.className = "day-label";
+          labelDiv.textContent = label;
+          container.appendChild(labelDiv);
 
-            for (let slot of entry.windows) {
-              const btn = document.createElement("button");
-              btn.className = "bubble-button";
-              btn.textContent = slot.label;
-              btn.onclick = () => openForm(entry.date, slot.label);
-              container.appendChild(btn);
-            }
-
-            grid.appendChild(container);
-            hasSlots = true;
+          for (let slot of entry.windows) {
+            const btn = document.createElement("button");
+            btn.className = "bubble-button";
+            btn.textContent = slot.label;
+            btn.onclick = () => openForm(entry.date, slot.label);
+            container.appendChild(btn);
           }
+
+          grid.appendChild(container);
+          hasSlots = true;
         }
 
         if (!hasSlots) {
           const noSlotMessage = document.createElement("div");
           noSlotMessage.style.textAlign = "center";
-          noSlotMessage.textContent = "No available times this week.";
+          noSlotMessage.textContent = "Sorry, we are all booked for this week. Please look ahead to find more available time.";
           grid.appendChild(noSlotMessage);
         }
 
         section.appendChild(grid);
         bookingApp.appendChild(section);
-      }
+      });
 
-      document.getElementById("prevWeek").style.display = currentOffset > 0 ? "inline-block" : "none";
+      document.getElementById("prevWeek").style.display = currentPage > 0 ? "inline-block" : "none";
     }
 
     document.getElementById("prevWeek").onclick = () => {
-      if (currentOffset >= 2) {
-        currentOffset -= 2;
+      if (currentPage > 0) {
+        currentPage--;
         renderCalendar();
       }
     };
 
     document.getElementById("nextWeek").onclick = () => {
-      currentOffset += 2;
-      renderCalendar();
+      if ((currentPage + 1) * 2 < groupedWeeks.length) {
+        currentPage++;
+        renderCalendar();
+      }
     };
 
     function openForm(dateStr, windowLabel) {
